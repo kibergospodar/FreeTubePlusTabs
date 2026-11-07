@@ -2,19 +2,31 @@
  <img alt="FreeTube + Tabs" src="/_icons/icon.svg" width=64 align="center">
 </p>
 
-<h1 align="center">FreeTube + Tabs</h1>
+<h1 align="center">FreeTubePlusTabs+</h1>
 
 <h4 align="center">Ad-Free YouTube Client with Tabbed Browsing</h4>
 
 <hr>
 
-## What It Is
+This is a fork of [FreeTube + Tabs](https://github.com/countgitmick/FreeTubePlusTabs),
+which itself started from [FreeTube](https://github.com/FreeTubeApp/FreeTube). All
+three carry the same GNU AGPL-3.0 license.
 
-FreeTube + Tabs is a desktop YouTube client with browser-style tabs. It plays no
-ads, runs no tracking script, and needs no Google account.
+## What This Repo Is
 
-The program started from [FreeTube](https://github.com/FreeTubeApp/FreeTube) and
-carries the same GNU AGPL-3.0 license.
+A desktop YouTube client with browser-style tabs. It plays no ads, runs no
+tracking script, and needs no Google account. See the Features section below
+for what the tabs layer, the player, and subscriptions handle.
+
+## What Changed / Added Here
+
+- **Settings menu fix.** The quality/speed/captions menu on the video player
+  closed itself a fraction of a second after opening, before you could pick
+  anything. The idle timer that auto-hides the player controls now checks
+  whether a settings menu is open before hiding them.
+- **Download button.** Video and audio now save locally from the player, using
+  a yt-dlp binary bundled with the app — nothing extra to install. Video
+  filenames include the resolution.
 
 <p align="center">
  <img alt="FreeTube + Tabs showing multiple open tabs" src="/_icons/preview.png" width=800>
@@ -128,17 +140,6 @@ work is not done.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) holds the build steps, the code standards, and
 the rules for the tab system.
-
-## Support
-
-Monero (XMR):
-
-```
-473aJKYE7YRX2eWQfPqhaEh6EV9ZrQxyWUWEEyy6KrnraSPEQXAzwNaHBN7EsqVLMFUocT1J2EnvgLArwLwsho9UHsUTFP4
-```
-
-This address supports this project only. To support upstream FreeTube, visit
-[freetubeapp.io](https://freetubeapp.io/).
 
 ## Credits
 
