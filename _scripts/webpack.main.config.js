@@ -46,7 +46,12 @@ const config = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.platform': `'${process.platform}'`,
+      // Baking in the build host's platform breaks cross-compilation (e.g.
+      // building the Windows package on macOS): every `process.platform ===
+      // 'darwin'` check would bake in as `true`, running mac-only code (like
+      // `app.dock.setMenu`) on Windows and crashing the main process. Set
+      // TARGET_PLATFORM to override this when cross-building.
+      'process.platform': JSON.stringify(process.env.TARGET_PLATFORM || process.platform),
       'process.env.IS_ELECTRON_MAIN': true
     })
   ],

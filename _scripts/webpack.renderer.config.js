@@ -139,7 +139,9 @@ const config = {
   plugins: [
     processLocalesPlugin,
     new webpack.DefinePlugin({
-      'process.platform': `'${process.platform}'`,
+      // See _scripts/webpack.main.config.js for why this isn't just
+      // `process.platform` — it would break cross-platform builds.
+      'process.platform': JSON.stringify(process.env.TARGET_PLATFORM || process.platform),
       'process.env.IS_ELECTRON': true,
       'process.env.IS_ELECTRON_MAIN': false,
       'process.env.SUPPORTS_LOCAL_API': true,
