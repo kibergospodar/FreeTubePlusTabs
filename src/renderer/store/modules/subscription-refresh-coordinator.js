@@ -248,13 +248,16 @@ async function runLoop() {
 
 async function processChannel(channel) {
   const startedAt = Date.now()
+  const controller = new AbortController()
   try {
     const result = await withTimeout(
       fetchChannelAllContent(channel.id, {
-        preferStrategy: stickyStrategy.get(channel.id)
+        preferStrategy: stickyStrategy.get(channel.id),
+        signal: controller.signal
       }),
       FETCH_TIMEOUT_MS,
-      channel.id
+      channel.id,
+      controller
     )
 
     attempted.add(channel.id)
@@ -462,12 +465,18 @@ function logFailureThrottled(channelId, attemptNumber, statusOrMessage) {
 }
 
 // Racing against a timeout so a hung fetch can't permanently occupy a slot.
-// The underlying fetch isn't cancelled (we don't have an AbortSignal threaded
-// through youtubei.js here); but its slot is freed and the channel goes onto
-// the backoff schedule.
-function withTimeout(promise, ms, label) {
+// `controller.abort()` actually cancels the underlying request (currently
+// wired through for the `scraper` strategy's fetch) instead of merely
+// abandoning the promise — without it, a hung request kept running in the
+// background indefinitely, holding open a connection to www.youtube.com
+// that the video player itself depends on (player data, continuations, PO
+// token refreshes), which is what caused playback to randomly stall until
+// the page was reloaded. The channel still goes onto the backoff schedule
+// either way.
+function withTimeout(promise, ms, label, controller) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
+      controller?.abort()
       reject(new Error(`[coordinator] fetch timeout after ${ms}ms for ${label}`))
     }, ms)
     promise.then(

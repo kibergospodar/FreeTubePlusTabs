@@ -935,9 +935,16 @@ export async function getLocalChannel(id) {
 
 /**
  * @param {string} id
+ * @param {{ signal?: AbortSignal }} [options] `signal` lets a caller (e.g. the
+ *   subscription refresh coordinator's per-fetch timeout) actually cancel the
+ *   underlying network request instead of just abandoning the promise — the
+ *   browser frees the connection immediately rather than holding it open
+ *   until the response (or the browser's own, much longer timeout) arrives.
  */
-export async function getLocalChannelVideos(id) {
-  const innertube = await createInnertube()
+export async function getLocalChannelVideos(id, { signal } = {}) {
+  const innertube = await createInnertube({
+    fetchFunc: signal ? (input, init) => fetch(input, { ...init, signal }) : null
+  })
 
   try {
     const response = await innertube.actions.execute('/browse', {

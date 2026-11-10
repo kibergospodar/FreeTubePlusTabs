@@ -30,6 +30,11 @@ import { getYtdlpChannelVideos } from './api/yt-dlp'
  * @param {string} channelId
  * @param {object} [options]
  * @param {'channel-rss' | 'yt-dlp' | 'scraper' | null} [options.preferStrategy]
+ * @param {AbortSignal} [options.signal] Aborts the in-progress strategy's
+ *   underlying request when the coordinator's fetch timeout fires, so the
+ *   connection is actually released instead of left running in the
+ *   background (see the `scraper` strategy, which shares the renderer's
+ *   fetch/connection pool with the video player itself).
  * @returns {Promise<{
  *   videos: any[] | null,
  *   shorts: any[] | null,
@@ -40,7 +45,7 @@ import { getYtdlpChannelVideos } from './api/yt-dlp'
  * }>}
  */
 export async function fetchChannelAllContent(channelId, options = {}) {
-  const { preferStrategy } = options
+  const { preferStrategy, signal } = options
 
   const order = orderForPreference(preferStrategy)
 
@@ -73,7 +78,7 @@ export async function fetchChannelAllContent(channelId, options = {}) {
         return terminalFailure(404)
       }
     } else if (strategy === 'scraper') {
-      const result = await tryScraper(channelId)
+      const result = await tryScraper(channelId, signal)
       lastStatus = result.status ?? lastStatus
       if (result.ok) {
         return wrapSuccess(result, 'scraper')
@@ -195,13 +200,13 @@ async function tryYtdlp(channelId) {
   }
 }
 
-async function tryScraper(channelId) {
+async function tryScraper(channelId, signal) {
   if (!process.env.SUPPORTS_LOCAL_API) {
     return { ok: false, status: 0, data: null }
   }
 
   try {
-    const result = await getLocalChannelVideos(channelId)
+    const result = await getLocalChannelVideos(channelId, { signal })
     if (result === null) {
       return { ok: false, status: 404, data: null, terminated: true }
     }
